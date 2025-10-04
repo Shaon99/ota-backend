@@ -23,10 +23,7 @@ app.use(rateLimit({
 }));
 
 // CORS
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : '*',
-  credentials: true
-}));
+app.use(cors());
 
 // Compression
 app.use(compression());

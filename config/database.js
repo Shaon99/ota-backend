@@ -8,7 +8,12 @@ class Database {
     }
     
     this.prisma = new PrismaClient({
-      log: process.env.NODE_ENV === 'development' ? ['error'] : ['error'],
+      log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
+      datasources: {
+        db: {
+          url: process.env.DATABASE_URL
+        }
+      }
     });
     
     Database.instance = this;
@@ -18,8 +23,13 @@ class Database {
     try {
       await this.prisma.$connect();
       console.log('✅ Database connected successfully');
+      
+      // Test the connection with a simple query
+      await this.prisma.$queryRaw`SELECT 1`;
+      console.log('✅ Database connection verified');
     } catch (error) {
       console.error('❌ Database connection failed:', error.message);
+      console.error('❌ Please check your DATABASE_URL and ensure the server is accessible');
       throw error;
     }
   }
