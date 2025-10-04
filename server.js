@@ -18,7 +18,7 @@ app.use(helmet());
 // Rate limiting
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 200, // limit each IP to 100 requests per windowMs
   message: { error: "Too many requests from this IP, please try again later." }
 }));
 
@@ -36,36 +36,34 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 // Routes
-app.use("/api/v1", routes);
+app.use(routes);
 
 // Root endpoint
 app.get("/", (req, res) => {
   res.json({
+    success: true,
     message: "OTA Backend API",
     version: "1.0.0",
-    status: "running"
-  });
-});
-
-// 404 handler
-app.all("*", (req, res) => {
-  res.status(404).json({ 
-    error: "The requested resource was not found on this server.",
-    path: req.originalUrl
+    status: "running",
+    timestamp: new Date().toISOString(),
   });
 });
 
 // Global error handler
 app.use((err, req, res, next) => {
   console.error("Error:", err.message);
+  console.error("Stack:", err.stack);
   
   if (res.headersSent) {
     return next(err);
   }
   
   res.status(500).json({ 
+    success: false,
     error: "Internal server error",
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
+    timestamp: new Date().toISOString(),
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 });
 
