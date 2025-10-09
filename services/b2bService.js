@@ -175,12 +175,19 @@ class B2BService {
 
   /**
    * Update B2B customer
+   * Note: Password updates are intentionally not allowed here for security reasons.
+   * Password should only be updated via the dedicated updateB2BCustomerPassword method.
    */
   static async updateB2BCustomer(id, updateData) {
     // Check if customer exists
     const existingCustomer = await this.findB2BCustomerById(id);
     if (!existingCustomer) {
       throw new Error('B2B customer not found');
+    }
+
+    // Prevent password update through this method
+    if ('password' in updateData) {
+      delete updateData.password;
     }
 
     // Check if email is being updated and if it's already taken
