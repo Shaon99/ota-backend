@@ -57,8 +57,6 @@ const updateB2BCustomer = async (req, res) => {
 // Update B2B customer password
 const updateB2BCustomerPassword = async (req, res) => {
   try {
-    // If called from B2B self-service route, use the authenticated user's ID
-    // If called from admin route, use the ID from params
     const id = req.user.type === 'b2b_customer' ? req.user.id : parseInt(req.params.id);
     const { currentPassword, newPassword, confirmPassword } = req.body;
     
