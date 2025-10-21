@@ -25,12 +25,12 @@ class B2BService {
    */
   static generateToken(payload) {
     const secret = process.env.JWT_SECRET;
-    const expiresIn = process.env.JWT_EXPIRES_IN || '24h';
-    
+    const expiresIn = process.env.JWT_EXPIRES_IN || "24h";
+
     if (!secret) {
-      throw new Error('JWT_SECRET is not configured');
+      throw new Error("JWT_SECRET is not configured");
     }
-    
+
     return jwt.sign(payload, secret, { expiresIn });
   }
 
@@ -40,8 +40,8 @@ class B2BService {
   static verifyToken(token) {
     const secret = process.env.JWT_SECRET;
     if (!secret) {
-      throw new Error('JWT_SECRET is not configured');
-    }    
+      throw new Error("JWT_SECRET is not configured");
+    }
     return jwt.verify(token, secret);
   }
 
@@ -69,17 +69,37 @@ class B2BService {
   /**
    * Create B2B customer
    */
-  static async createB2BCustomer(name, email, phone, password) {
+  static async createB2BCustomer(customerData) {
+    const {
+      name,
+      email,
+      phone,
+      password,
+      city,
+      thana,
+      address,
+      c_name,
+      business_email,
+      c_phone_number,
+      c_email,
+      trade_license,
+      civil_aviation_certificate,
+      national_id_front,
+      national_id_back,
+      address_proof,
+      heard_about,
+    } = customerData;
+
     // Check if customer already exists
     const existingEmail = await this.findB2BCustomerByEmail(email);
     if (existingEmail) {
-      throw new Error('B2B customer with this email already exists');
+      throw new Error("B2B customer with this email already exists");
     }
 
     // Check if customer already exists
     const existingPhone = await this.findB2BCustomerByPhone(phone);
     if (existingPhone) {
-      throw new Error('B2B customer with this phone number already exists');
+      throw new Error("B2B customer with this phone number already exists");
     }
 
     // Hash password
@@ -87,14 +107,31 @@ class B2BService {
 
     // Create customer
     const customer = await prisma.b2BCustomer.create({
-      data: { 
-        name, 
-        email, 
-        phone, 
-        password: hashedPassword, 
-        role: 'b2b_admin', 
-        isActive: true 
-      }
+      data: {
+        name,
+        email,
+        phone,
+        password: hashedPassword,
+        role: "b2b_admin",
+        isActive: true,
+        // Personal Information
+        city,
+        thana,
+        address,
+        // Company Information
+        c_name,
+        business_email,
+        c_phone_number,
+        c_email,
+        // Documents (Optional)
+        trade_license,
+        civil_aviation_certificate,
+        national_id_front,
+        national_id_back,
+        address_proof,
+        // Additional Information
+        heard_about,
+      },
     });
 
     // Return customer without password
@@ -105,24 +142,26 @@ class B2BService {
   /**
    * Get all B2B customers with pagination
    */
-  static async getAllB2BCustomers(page = 1, limit = 10, search = '') {
+  static async getAllB2BCustomers(page = 1, limit = 10, search = "") {
     const skip = (page - 1) * limit;
-    
-    const where = search ? {
-      OR: [
-        { name: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-        { phone: { contains: search } }
-      ],
-      deletedAt: null
-    } : { deletedAt: null };
+
+    const where = search
+      ? {
+          OR: [
+            { name: { contains: search, mode: "insensitive" } },
+            { email: { contains: search, mode: "insensitive" } },
+            { phone: { contains: search } },
+          ],
+          deletedAt: null,
+        }
+      : { deletedAt: null };
 
     const [customers, total] = await Promise.all([
-      prisma.b2BCustomer.findMany({ 
-        where, 
-        skip, 
-        take: limit, 
-        orderBy: { createdAt: 'desc' },
+      prisma.b2BCustomer.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
         select: {
           id: true,
           name: true,
@@ -131,10 +170,10 @@ class B2BService {
           role: true,
           isActive: true,
           createdAt: true,
-          updatedAt: true
-        }
+          updatedAt: true,
+        },
       }),
-      prisma.b2BCustomer.count({ where })
+      prisma.b2BCustomer.count({ where }),
     ]);
 
     return {
@@ -143,8 +182,8 @@ class B2BService {
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit)
-      }
+        pages: Math.ceil(total / limit),
+      },
     };
   }
 
@@ -152,7 +191,7 @@ class B2BService {
    * Get B2B customer by ID
    */
   static async getB2BCustomerById(id) {
-    const customer = await prisma.b2BCustomer.findUnique({ 
+    const customer = await prisma.b2BCustomer.findUnique({
       where: { id },
       select: {
         id: true,
@@ -162,12 +201,12 @@ class B2BService {
         role: true,
         isActive: true,
         createdAt: true,
-        updatedAt: true
-      }
+        updatedAt: true,
+      },
     });
 
     if (!customer) {
-      throw new Error('B2B customer not found');
+      throw new Error("B2B customer not found");
     }
 
     return customer;
@@ -182,11 +221,11 @@ class B2BService {
     // Check if customer exists
     const existingCustomer = await this.findB2BCustomerById(id);
     if (!existingCustomer) {
-      throw new Error('B2B customer not found');
+      throw new Error("B2B customer not found");
     }
 
     // Prevent password update through this method
-    if ('password' in updateData) {
+    if ("password" in updateData) {
       delete updateData.password;
     }
 
@@ -194,7 +233,7 @@ class B2BService {
     if (updateData.email && updateData.email !== existingCustomer.email) {
       const emailExists = await this.findB2BCustomerByEmail(updateData.email);
       if (emailExists) {
-        throw new Error('Email already exists');
+        throw new Error("Email already exists");
       }
     }
 
@@ -202,7 +241,7 @@ class B2BService {
     if (updateData.phone && updateData.phone !== existingCustomer.phone) {
       const phoneExists = await this.findB2BCustomerByPhone(updateData.phone);
       if (phoneExists) {
-        throw new Error('Phone number already exists');
+        throw new Error("Phone number already exists");
       }
     }
 
@@ -217,8 +256,8 @@ class B2BService {
         role: true,
         isActive: true,
         createdAt: true,
-        updatedAt: true
-      }
+        updatedAt: true,
+      },
     });
 
     return updatedCustomer;
@@ -231,13 +270,16 @@ class B2BService {
     // Find customer
     const customer = await prisma.b2BCustomer.findUnique({ where: { id } });
     if (!customer) {
-      throw new Error('B2B customer not found');
+      throw new Error("B2B customer not found");
     }
 
     // Verify current password
-    const isCurrentPasswordValid = await this.comparePassword(currentPassword, customer.password);
+    const isCurrentPasswordValid = await this.comparePassword(
+      currentPassword,
+      customer.password
+    );
     if (!isCurrentPasswordValid) {
-      throw new Error('Current password is incorrect');
+      throw new Error("Current password is incorrect");
     }
 
     // Hash new password
@@ -246,10 +288,10 @@ class B2BService {
     // Update password
     await prisma.b2BCustomer.update({
       where: { id },
-      data: { password: hashedNewPassword }
+      data: { password: hashedNewPassword },
     });
 
-    return { message: 'Password updated successfully' };
+    return { message: "Password updated successfully" };
   }
 
   /**
@@ -258,7 +300,7 @@ class B2BService {
   static async updateB2BCustomerStatus(id, isActive) {
     const customer = await prisma.b2BCustomer.findUnique({ where: { id } });
     if (!customer) {
-      throw new Error('B2B customer not found');
+      throw new Error("B2B customer not found");
     }
 
     const updatedCustomer = await prisma.b2BCustomer.update({
@@ -272,8 +314,8 @@ class B2BService {
         role: true,
         isActive: true,
         createdAt: true,
-        updatedAt: true
-      }
+        updatedAt: true,
+      },
     });
 
     return updatedCustomer;
@@ -285,15 +327,15 @@ class B2BService {
   static async deleteB2BCustomer(id) {
     const customer = await prisma.b2BCustomer.findUnique({ where: { id } });
     if (!customer) {
-      throw new Error('B2B customer not found');
+      throw new Error("B2B customer not found");
     }
 
     await prisma.b2BCustomer.update({
       where: { id },
-      data: { deletedAt: new Date() }
+      data: { deletedAt: new Date() },
     });
 
-    return { message: 'B2B customer deleted successfully' };
+    return { message: "B2B customer deleted successfully" };
   }
 
   /**
@@ -303,23 +345,26 @@ class B2BService {
     // Find customer
     const customer = await prisma.b2BCustomer.findUnique({ where: { email } });
     if (!customer) {
-      throw new Error('Invalid credentials');
+      throw new Error("Invalid credentials");
     }
 
     // Check if customer is active
     if (!customer.isActive) {
-      throw new Error('Account is deactivated');
+      throw new Error("Account is deactivated");
     }
 
     // Check if customer is deleted
     if (customer.deletedAt) {
-      throw new Error('Account not found');
+      throw new Error("Account not found");
     }
 
     // Verify password
-    const isPasswordValid = await this.comparePassword(password, customer.password);
+    const isPasswordValid = await this.comparePassword(
+      password,
+      customer.password
+    );
     if (!isPasswordValid) {
-      throw new Error('Invalid credentials');
+      throw new Error("Invalid credentials");
     }
 
     return customer;
@@ -332,7 +377,7 @@ class B2BService {
     const token = this.generateToken({
       id: customer.id,
       email: customer.email,
-      role: customer.role
+      role: customer.role,
     });
 
     return {
@@ -343,8 +388,8 @@ class B2BService {
         email: customer.email,
         phone: customer.phone,
         role: customer.role,
-        isActive: customer.isActive
-      }
+        isActive: customer.isActive,
+      },
     };
   }
 }
