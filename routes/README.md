@@ -21,6 +21,7 @@ routes/
 - `POST /admin/signin` - Admin login
 - `POST /admin/logout` - Admin logout
 - `GET /admin/profile` - Get admin profile
+- `POST /b2b/register` - B2B customer registration (public)
 - `POST /b2b/signin` - B2B customer login
 
 ### 2. Admin Routes (`/api/v1/admin`)
