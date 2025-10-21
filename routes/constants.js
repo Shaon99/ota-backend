@@ -22,6 +22,7 @@ const ROUTES = {
   ADMIN_B2B_CUSTOMER_STATUS: '/b2b/customer/:id/status',
   
   // B2B customer authentication routes
+  B2B_REGISTER: '/b2b/register',
   B2B_SIGNIN: '/b2b/signin',
   
   // B2B customer self-service routes

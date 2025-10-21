@@ -98,6 +98,18 @@ const deleteB2BCustomer = async (req, res) => {
   }
 };
 
+// B2B customer registration
+const registerB2BCustomer = async (req, res) => {
+  try {
+    const { name, email, phone, password } = req.body;
+    const customer = await B2BService.createB2BCustomer(name, email, phone, password);
+    const authResponse = B2BService.generateAuthResponse(customer);
+    return ResponseUtil.success(res, authResponse, 'B2B customer registered successfully');
+  } catch (error) {
+    return ResponseUtil.error(res, error.message || "Internal server error");
+  }
+};
+
 // B2B customer signin
 const signInB2BCustomer = async (req, res) => {
   try {
@@ -118,5 +130,6 @@ module.exports = {
   updateB2BCustomerPassword,
   updateB2BCustomerStatus,
   deleteB2BCustomer,
+  registerB2BCustomer,
   signInB2BCustomer
 };
