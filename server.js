@@ -35,9 +35,6 @@ app.use(express.urlencoded({ extended: true }));
 // Logging
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
-// Routes
-app.use(routes);
-
 // Root endpoint
 app.get("/", (req, res) => {
   res.json({
@@ -48,6 +45,9 @@ app.get("/", (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// Routes
+app.use(routes);
 
 // Global error handler
 app.use((err, req, res, next) => {

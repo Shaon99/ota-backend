@@ -90,6 +90,27 @@ class B2BService {
       heard_about,
     } = customerData;
 
+    // Validate document fields - reject empty objects
+    const documentFields = [
+      "trade_license",
+      "civil_aviation_certificate",
+      "national_id_front",
+      "national_id_back",
+      "address_proof",
+    ];
+
+    for (const field of documentFields) {
+      if (
+        customerData[field] &&
+        typeof customerData[field] === "object" &&
+        Object.keys(customerData[field]).length === 0
+      ) {
+        throw new Error(
+          `${field} cannot be an empty object. Please provide a valid string or omit this field.`
+        );
+      }
+    }
+
     // Check if customer already exists
     const existingEmail = await this.findB2BCustomerByEmail(email);
     if (existingEmail) {
@@ -113,24 +134,24 @@ class B2BService {
         phone,
         password: hashedPassword,
         role: "b2b_admin",
-        isActive: true,
+        isActive: false,
         // Personal Information
-        city,
-        thana,
-        address,
+        city: city || null,
+        thana: thana || null,
+        address: address || null,
         // Company Information
-        c_name,
-        business_email,
-        c_phone_number,
-        c_email,
+        c_name: c_name || null,
+        business_email: business_email || null,
+        c_phone_number: c_phone_number || null,
+        c_email: c_email || null,
         // Documents (Optional)
-        trade_license,
-        civil_aviation_certificate,
-        national_id_front,
-        national_id_back,
-        address_proof,
+        trade_license: trade_license || null,
+        civil_aviation_certificate: civil_aviation_certificate || null,
+        national_id_front: national_id_front || null,
+        national_id_back: national_id_back || null,
+        address_proof: address_proof || null,
         // Additional Information
-        heard_about,
+        heard_about: heard_about || null,
       },
     });
 
@@ -199,6 +220,19 @@ class B2BService {
         email: true,
         phone: true,
         role: true,
+        city: true,
+        thana: true,
+        address: true, 
+        c_name: true,
+        business_email: true,
+        c_phone_number: true,
+        c_email: true,
+        trade_license: true,
+        civil_aviation_certificate: true,
+        heard_about: true,
+        address_proof: true,
+        national_id_back: true,
+        national_id_front: true,
         isActive: true,
         createdAt: true,
         updatedAt: true,

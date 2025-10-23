@@ -63,7 +63,7 @@ const createValidationMiddleware = (validationRules) => {
       Object.entries(validationRules).forEach(([field, rules]) => {
         const value = req.body[field];
         
-        if (rules.required && !value) {
+        if (rules.required && (value === undefined || value === null)) {
           throw new Error(`${field} is required`);
         }
         

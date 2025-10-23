@@ -4,12 +4,43 @@ const ResponseUtil = require("../utils/response");
 // Create B2B customer
 const createB2BCustomer = async (req, res) => {
   try {
-    const { name, email, phone, password } = req.body;
+    const {
+      name,
+      email,
+      phone,
+      password,
+      city,
+      thana,
+      address,
+      c_name,
+      business_email,
+      c_phone_number,
+      c_email,
+      trade_license,
+      civil_aviation_certificate,
+      national_id_front,
+      national_id_back,
+      address_proof,
+      heard_about,
+    } = req.body;
     const b2bCustomer = await B2BService.createB2BCustomer({
       name,
       email,
       phone,
       password,
+      city,
+      thana,
+      address,
+      c_name,
+      business_email,
+      c_phone_number,
+      c_email,
+      trade_license,
+      civil_aviation_certificate,
+      national_id_front,
+      national_id_back,
+      address_proof,
+      heard_about,
     });
     return ResponseUtil.success(
       res,
@@ -186,6 +217,13 @@ const registerB2BCustomer = async (req, res) => {
       "B2B customer registered successfully"
     );
   } catch (error) {
+    // Handle specific error types with appropriate status codes
+    if (error.message.includes("already exists")) {
+      return ResponseUtil.conflict(res, error.message);
+    }
+    if (error.message.includes("cannot be an empty object")) {
+      return ResponseUtil.validationError(res, error.message);
+    }
     return ResponseUtil.error(res, error.message || "Internal server error");
   }
 };
@@ -198,6 +236,14 @@ const signInB2BCustomer = async (req, res) => {
     const authResponse = B2BService.generateAuthResponse(customer);
     return ResponseUtil.success(res, authResponse, "B2B Login successful");
   } catch (error) {
+    // Handle authentication errors with appropriate status codes
+    if (
+      error.message === "Invalid credentials" ||
+      error.message === "Account is deactivated" ||
+      error.message === "Account not found"
+    ) {
+      return ResponseUtil.unauthorized(res, error.message);
+    }
     return ResponseUtil.error(res, error.message || "Internal server error");
   }
 };
