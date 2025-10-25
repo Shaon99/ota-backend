@@ -63,7 +63,7 @@ const createValidationMiddleware = (validationRules) => {
       Object.entries(validationRules).forEach(([field, rules]) => {
         const value = req.body[field];
         
-        if (rules.required && !value) {
+        if (rules.required && (value === undefined || value === null)) {
           throw new Error(`${field} is required`);
         }
         
@@ -124,6 +124,116 @@ const b2bCustomerCreateValidation = createValidationMiddleware({
     minLength: 6,
     maxLength: 128
   }
+});
+
+/**
+ * B2B Customer registration validation (with all fields)
+ */
+const b2bCustomerRegistrationValidation = createValidationMiddleware({
+  // Required fields
+  name: {
+    required: true,
+    type: "string",
+    minLength: 2,
+    maxLength: 100,
+  },
+  email: {
+    required: true,
+    type: "email",
+    maxLength: 255,
+  },
+  phone: {
+    required: true,
+    type: "phone",
+    minLength: 10,
+    maxLength: 20,
+  },
+  password: {
+    required: true,
+    type: "password",
+    minLength: 6,
+    maxLength: 128,
+  },
+  isActive: {
+    required: true,
+    type: Boolean,
+  },
+  city: {
+    required: true,
+    type: "string",
+    minLength: 2,
+    maxLength: 100,
+  },
+  thana: {
+    required: true,
+    type: "string",
+    minLength: 2,
+    maxLength: 100,
+  },
+  address: {
+    required: true,
+    type: "string",
+    minLength: 10,
+    maxLength: 500,
+  },
+  c_name: {
+    required: true,
+    type: "string",
+    minLength: 2,
+    maxLength: 200,
+  },
+  business_email: {
+    required: true,
+    type: "email",
+    maxLength: 255,
+  },
+  c_phone_number: {
+    required: true,
+    type: "phone",
+    minLength: 10,
+    maxLength: 20,
+  },
+  c_email: {
+    required: true,
+    type: "email",
+    maxLength: 255,
+  },
+  national_id_front: {
+    required: false,
+    type: "string",
+    minLength: 1,
+    maxLength: 500,
+  },
+  national_id_back: {
+    required: false,
+    type: "string",
+    minLength: 1,
+    maxLength: 500,
+  },
+  address_proof: {
+    required: false,
+    type: "string",
+    minLength: 1,
+    maxLength: 500,
+  },
+  heard_about: {
+    required: false,
+    type: "string",
+    minLength: 2,
+    maxLength: 200,
+  },
+
+  // Optional fields (no validation rules needed as they're optional)
+  trade_license: {
+    required: false,
+    type: "string",
+    maxLength: 500,
+  },
+  civil_aviation_certificate: {
+    required: false,
+    type: "string",
+    maxLength: 500,
+  },
 });
 
 /**
@@ -202,6 +312,7 @@ const b2bCustomerStatusUpdateValidation = createValidationMiddleware({
 
 module.exports = {
   b2bCustomerCreateValidation,
+  b2bCustomerRegistrationValidation,
   b2bCustomerSignInValidation,
   b2bCustomerProfileUpdateValidation,
   b2bCustomerPasswordChangeValidation,

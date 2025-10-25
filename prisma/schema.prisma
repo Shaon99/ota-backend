@@ -24,16 +24,38 @@ model Admin {
 
 // B2B customer model
 model B2BCustomer {
-  id        Int       @id @default(autoincrement())
-  name      String
-  email     String    @unique
-  phone     String    @unique
-  password  String
-  role      String    @default("b2b_admin")
-  isActive  Boolean   @default(true)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id                        Int       @id @default(autoincrement())
+  name                      String
+  email                     String    @unique
+  phone                     String    @unique
+  password                  String
+  role                      String    @default("b2b_admin")
+  isActive                  Boolean   @default(true)
+  
+  // Personal Information
+  city                      String?
+  thana                     String?
+  address                   String?
+  
+  // Company Information
+  c_name                    String?
+  business_email            String?
+  c_phone_number            String?
+  c_email                   String?
+  
+  // Documents (Optional)
+  trade_license             String?
+  civil_aviation_certificate String?
+  national_id_front         String?
+  national_id_back          String?
+  address_proof             String?
+  
+  // Additional Information
+  heard_about               String?
+  
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+  deletedAt                 DateTime?
 
   @@map("b2b_customers")
 }
