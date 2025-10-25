@@ -46,24 +46,39 @@ class B2BService {
   }
 
   /**
-   * Find B2B customer by email
+   * Find B2B customer by email (excluding soft-deleted)
    */
   static async findB2BCustomerByEmail(email) {
-    return await prisma.b2BCustomer.findUnique({ where: { email } });
+    return await prisma.b2BCustomer.findFirst({
+      where: {
+        email,
+        deletedAt: null,
+      },
+    });
   }
 
   /**
-   * Find B2B customer by phone
+   * Find B2B customer by phone (excluding soft-deleted)
    */
   static async findB2BCustomerByPhone(phone) {
-    return await prisma.b2BCustomer.findUnique({ where: { phone } });
+    return await prisma.b2BCustomer.findFirst({
+      where: {
+        phone,
+        deletedAt: null,
+      },
+    });
   }
 
   /**
-   * Find B2B customer by ID
+   * Find B2B customer by ID (excluding soft-deleted)
    */
   static async findB2BCustomerById(id) {
-    return await prisma.b2BCustomer.findUnique({ where: { id } });
+    return await prisma.b2BCustomer.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
+    });
   }
 
   /**
@@ -74,6 +89,7 @@ class B2BService {
       name,
       email,
       phone,
+      isActive,
       password,
       city,
       thana,
@@ -134,7 +150,7 @@ class B2BService {
         phone,
         password: hashedPassword,
         role: "b2b_admin",
-        isActive: false,
+        isActive,
         // Personal Information
         city: city || null,
         thana: thana || null,
@@ -209,11 +225,14 @@ class B2BService {
   }
 
   /**
-   * Get B2B customer by ID
+   * Get B2B customer by ID (excluding soft-deleted)
    */
   static async getB2BCustomerById(id) {
-    const customer = await prisma.b2BCustomer.findUnique({
-      where: { id },
+    const customer = await prisma.b2BCustomer.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
       select: {
         id: true,
         name: true,
@@ -222,7 +241,7 @@ class B2BService {
         role: true,
         city: true,
         thana: true,
-        address: true, 
+        address: true,
         c_name: true,
         business_email: true,
         c_phone_number: true,
@@ -376,8 +395,8 @@ class B2BService {
    * Authenticate B2B customer
    */
   static async authenticateB2BCustomer(email, password) {
-    // Find customer
-    const customer = await prisma.b2BCustomer.findUnique({ where: { email } });
+    // Find customer (excluding soft-deleted)
+    const customer = await this.findB2BCustomerByEmail(email);
     if (!customer) {
       throw new Error("Invalid credentials");
     }
@@ -385,11 +404,6 @@ class B2BService {
     // Check if customer is active
     if (!customer.isActive) {
       throw new Error("Account is deactivated");
-    }
-
-    // Check if customer is deleted
-    if (customer.deletedAt) {
-      throw new Error("Account not found");
     }
 
     // Verify password

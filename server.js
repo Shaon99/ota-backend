@@ -1,4 +1,5 @@
-require('dotenv').config();
+const portfinder = require("portfinder");
+require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
@@ -10,17 +11,21 @@ const routes = require("./routes");
 const database = require("./config/database");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const DEFAULT_PORT = process.env.PORT || 3000;
 
 // Security middleware
 app.use(helmet());
 
 // Rate limiting
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 200,
-  message: { error: "Too many requests from this IP, please try again later." }
-}));
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 200,
+    message: {
+      error: "Too many requests from this IP, please try again later.",
+    },
+  })
+);
 
 // CORS
 app.use(cors());
@@ -29,7 +34,7 @@ app.use(cors());
 app.use(compression());
 
 // Body parsing
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // Logging
@@ -53,17 +58,20 @@ app.use(routes);
 app.use((err, req, res, next) => {
   console.error("Error:", err.message);
   console.error("Stack:", err.stack);
-  
+
   if (res.headersSent) {
     return next(err);
   }
-  
-  res.status(500).json({ 
+
+  res.status(500).json({
     success: false,
     error: "Internal server error",
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
+    message:
+      process.env.NODE_ENV === "development"
+        ? err.message
+        : "Something went wrong",
     timestamp: new Date().toISOString(),
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
   });
 });
 
@@ -71,10 +79,16 @@ app.use((err, req, res, next) => {
 (async () => {
   try {
     await database.connect();
-    
-    const server = app.listen(PORT, () => {
-      console.log(`🚀 OTA Backend API listening on port ${PORT}!`);
-      console.log(`📊 Health check: http://localhost:${PORT}/api/v1/health`);
+
+    // Find an available port
+    const port = await portfinder.getPortPromise({
+      port: DEFAULT_PORT,
+      stopPort: DEFAULT_PORT + 100, // Search up to 100 ports ahead
+    });
+
+    const server = app.listen(port, () => {
+      console.log(`🚀 OTA Backend API listening on port ${port}!`);
+      console.log(`📊 Health check: http://localhost:${port}/api/v1/health`);
     });
 
     // Graceful shutdown
@@ -94,7 +108,6 @@ app.use((err, req, res, next) => {
 
     process.on("SIGINT", shutdown);
     process.on("SIGTERM", shutdown);
-    
   } catch (error) {
     console.error("Server startup failed:", error.message);
     process.exit(1);
